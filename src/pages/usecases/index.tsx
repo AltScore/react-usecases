@@ -1,17 +1,8 @@
-import {Page as PageType} from "../../types/page";
-import {useSettings} from "../../hooks/use-settings";
-import {useTranslation} from "react-i18next";
-import {usePageView} from "../../hooks/use-page-view";
-import {Seo} from "../../components/seo";
 import {Box, Paper, Stack, Typography} from "@mui/material";
 
-import {UsecaseExample} from "../../lib/ui-flows/example";
+import {UsecaseExample} from "@/lib/ui-flows/example";
 
-const Page: PageType = () => {
-    const settings = useSettings();
-    const { t } = useTranslation();
-
-    usePageView();
+const Page = () => {
     return (
         <>
             <Box
@@ -30,7 +21,7 @@ const Page: PageType = () => {
     );
 };
 
-Page.getLayout = (page) => (
+Page.getLayout = (page: any) => (
     <Paper>
         {page}
     </Paper>
