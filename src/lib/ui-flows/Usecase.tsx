@@ -1,18 +1,24 @@
 import {Box, Paper, Stack, Typography} from "@mui/material";
 import React from "react";
-import { TaskInstanceConfiguration } from "./taskInstance";
+import {OnCompletedFunc, TaskInstance, TaskInstanceConfiguration} from "./taskInstance";
 import {UsecasesHelper} from "./usecasesHelper";
 
 type UsecaseProps = {
     usecase: UsecaseData;
     usecasesHelper: UsecasesHelper;
+    onCompleted: OnCompletedFunc;
 }
 export const Usecase = (
     {
         usecase,
         usecasesHelper,
+        onCompleted,
     }: UsecaseProps
 ) => {
+    const localOnCompleted = (outputs: Record<string, any>) => {
+        console.log("completed", outputs)
+        onCompleted({})
+    }
     return <Paper
         elevation={3}
         sx={{
@@ -22,19 +28,21 @@ export const Usecase = (
     >
         <Stack>
             <Box margin={"auto"}>
-                <Typography variant={"h5"}>
-                    {usecase.name}
-                </Typography>
-                <Typography variant={"body1"}>
-                    {usecase.description}
-                </Typography>
+                <TaskInstance
+                    inputs={{}}
+                    taskAlias={usecase.rootTaskInstanceAlias}
+                    usecasesHelper={usecasesHelper}
+                    onCompleted={localOnCompleted}
+                    shouldBeClosed={false}
+                    setOutputKey={() => {}}
+                    />
             </Box>
         </Stack>
     </Paper>
 }
-type UsecaseData = {
+export type UsecaseData = {
     name: string;
     description: string;
     rootTaskInstanceAlias: string;
-    taskInstances: Map<string, TaskInstanceConfiguration>;
+    taskInstances: Record<string, TaskInstanceConfiguration>;
 }

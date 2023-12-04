@@ -1,9 +1,10 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React, {FC, useCallback, useEffect, useState} from "react";
 import {Stack} from "@mui/material";
 import {UsecasesBar} from "./usecasesBar";
-import {Usecase} from "./Usecase";
+import {Usecase, UsecaseData} from "./Usecase";
 import {UsecasePillProps} from "./UsecasePill";
 import {UsecasesHelper} from "./usecasesHelper";
+import {TaskInstanceConfiguration} from "@/lib/ui-flows/taskInstance";
 
 export type InputSpec = {
     type: string;
@@ -16,46 +17,46 @@ export type OutputSpec = {
 
 export type TaskDefinition = {
     name: string;
-    inputs: Map<string, InputSpec>;
-    outputs: Map<string, OutputSpec>;
+    inputs: Record<string, InputSpec>;
+    outputs: Record<string, OutputSpec>;
 }
 
 export type UsecasesAppConfiguration = {
-    taskDefinitions: Map<string, TaskDefinition>;
-    tasks: Map<string, any>;
+    taskDefinitions: Record<string, TaskDefinition>;
+    tasks: Record<string, FC>;
 }
 
-const nativeTaskDefinitions = new Map()
+const nativeTaskDefinitions: Record<string, TaskDefinition> = {}
 
-const nativeTasks = new Map()
+const nativeTasks: Record<string, FC> = {}
 
-const useInitUsecasesConfig = (configuration: any) => {
+
+const useInitUsecasesConfig = (configuration: UsecasesAppConfiguration) => {
     const [context, setContext] = useState<any>(null)
     useEffect(() => {
         // checks
         // - each task definition has an associated task
-        for (const taskDefinition of configuration.taskDefinitions.values()) {
-            if (!configuration.tasks.has(taskDefinition.name)) {
+        for (const taskDefinition of Object.values(configuration.taskDefinitions)) {
+            if (!(taskDefinition.name in configuration.tasks)) {
                 throw new Error(`Task definition ${taskDefinition.name} has no associated task logic`);
             }
         }
-
 
         // - we create the configuration for this context
         const tasksDefinitions = nativeTaskDefinitions;
         const tasks = nativeTasks;
 
-        for (const taskDefinition of configuration.taskDefinitions.values()) {
-            tasksDefinitions.set(taskDefinition.name, taskDefinition);
+        for (const taskDefinition of Object.values(configuration.taskDefinitions)) {
+            tasksDefinitions[taskDefinition.name] = taskDefinition;
         }
 
-        for (const task of configuration.tasks.values()) {
-            tasks.set(task.name, task);
+        for (const [taskDefAlias, taskFC] of Object.entries(configuration.tasks)) {
+            tasks[taskDefAlias] = taskFC;
         }
 
         const context = {
             taskDefinitions: tasksDefinitions,
-            tasks: tasks
+            tasks: tasks,
         }
         setContext(context)
     }, [])
@@ -63,8 +64,8 @@ const useInitUsecasesConfig = (configuration: any) => {
 }
 
 
-const useLoadUsecases = (usecasesLoader: (textQuery: string) => Promise<any[]>, textQuery: string) => {
-    const [usecases, setUsecases] = useState<any[]>([])
+const useLoadUsecases = (usecasesLoader: (textQuery: string) => Promise<UsecaseData[]>, textQuery: string) => {
+    const [usecases, setUsecases] = useState<UsecaseData[]>([])
     const reloadUsecases = useCallback(async (textQuery: string) => {
         const usecases = await usecasesLoader(textQuery);
         setUsecases(usecases)
@@ -86,7 +87,7 @@ const useTextQuery = () => {
 
 type UsecasesProps = {
     configuration: UsecasesAppConfiguration;
-    usecasesLoader: (textQuery: string) => Promise<any[]>;
+    usecasesLoader: (textQuery: string) => Promise<UsecaseData[]>;
     // UsecasePill is a function that will be used like <UsecasePill usecase={usecase}/>
     UsecasePill: React.FC<UsecasePillProps>;
 }
@@ -100,13 +101,16 @@ const Usecases = (
 
     // runs only once.
     const config = useInitUsecasesConfig(configuration)
-    const helper = new UsecasesHelper(config)
     const {textQuery, setTextQuery} = useTextQuery()
     const {usecases, reloadUsecases} = useLoadUsecases(usecasesLoader, textQuery)
     const [showPills, setShowPills] = useState(true)
     const [showBar, setShowBar] = useState(true)
     const [showUseCase, setShowUsecase] = useState(false)
-    const [selectedUsecase, setSelectedUsecase] = useState<any>(null)
+    const [selectedUsecase, setSelectedUsecase] = useState<UsecaseData | null>(null)
+    if (config) {
+        config.taskInstanceConfigurations = selectedUsecase?.taskInstances as Record<string, TaskInstanceConfiguration>
+    }
+    const helper = new UsecasesHelper(config)
 
     useEffect(() => {
         reloadUsecases("").catch(console.error)
@@ -118,6 +122,13 @@ const Usecases = (
         // setShowBar(false)
         setShowUsecase(true)
         setSelectedUsecase(usecase)
+    }, [])
+
+    const onUseCaseCompleted = useCallback((_: Record<string, any>) => {
+        setShowPills(true)
+        setShowBar(true)
+        setShowUsecase(false)
+        setSelectedUsecase(null)
     }, [])
 
     // return area
@@ -152,9 +163,10 @@ const Usecases = (
                     />
                 })}
             </Stack>}
-            {showUseCase && <Usecase
-                usecase={selectedUsecase}
+            {showUseCase && selectedUsecase && <Usecase
+                usecase={selectedUsecase!}
                 usecasesHelper={helper}
+                onCompleted={onUseCaseCompleted}
             />}
         </Stack>
 

@@ -1,32 +1,36 @@
 import {Box} from "@mui/material";
 import React from "react";
-import {Usecases} from "./index";
+import {Usecases, UsecasesAppConfiguration} from "./index";
 import {DefaultUsecasePill} from "./UsecasePill";
+import {UsecaseData} from "@/lib/ui-flows/Usecase";
 
-const usecasesLoaderMock = async (textQuery: string) => {
+const usecasesLoaderMock = async (textQuery: string): Promise<UsecaseData[]> => {
     return [
         {
-            name: "usecase1",
-            description: "description1",
-        },
-        {
-            name: "usecase2",
-            description: "description2",
-        },
-        {
-            name: "usecase3",
-            description: "description3",
-        },
-        {
-            name: "usecase4",
-            description: "description4",
+            name: "Usecase 1",
+            rootTaskInstanceAlias: "task1",
+            description: "This is the first usecase",
+            taskInstances: {
+                task1: {
+                    type: "native",
+                    slots: {},
+                }
+            },
         }
     ]
 }
 const UsecaseExample = () => {
-    const configuration = {
-        taskDefinitions: new Map(),
-        tasks: new Map(),
+    const configuration: UsecasesAppConfiguration = {
+        taskDefinitions: {
+            native: {
+                name: "native",
+                inputs: {},
+                outputs: {},
+            }
+        },
+        tasks: {
+            native: () => <div>Native task</div>
+        },
     }
     return <Box
         padding={0}
