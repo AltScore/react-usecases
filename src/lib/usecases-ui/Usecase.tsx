@@ -4,13 +4,13 @@ import {OnCompletedFunc, TaskInstance, TaskInstanceConfiguration} from "./taskIn
 import {UsecasesHelper} from "./usecasesHelper";
 
 type UsecaseProps = {
-    usecase: UsecaseData;
+    usecaseData: UsecaseData;
     usecasesHelper: UsecasesHelper;
     onCompleted: OnCompletedFunc;
 }
 export const Usecase = (
     {
-        usecase,
+        usecaseData,
         usecasesHelper,
         onCompleted,
     }: UsecaseProps
@@ -22,6 +22,7 @@ export const Usecase = (
     return <Paper
         elevation={3}
         sx={{
+            width: "100%",
             flexGrow: 1,
             maxHeight: "80%",
         }}
@@ -30,7 +31,7 @@ export const Usecase = (
             <Box margin={"auto"}>
                 <TaskInstance
                     inputs={{}}
-                    taskAlias={usecase.rootTaskInstanceAlias}
+                    taskAlias={usecaseData.rootTaskInstanceAlias}
                     usecasesHelper={usecasesHelper}
                     onCompleted={localOnCompleted}
                     shouldBeClosed={false}

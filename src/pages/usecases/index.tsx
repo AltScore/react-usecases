@@ -1,13 +1,19 @@
 import {Box, Paper, Stack, Typography} from "@mui/material";
 
-import {UsecaseExample} from "@/lib/ui-flows/example";
+import {UsecaseExample} from "@/lib/usecases-ui/example";
 
 const Page = () => {
     return (
-        <>
+        <Paper sx={{
+            backgroundColor: "lightgray",
+            width: "100%",
+            height: "100vh",
+        }}>
             <Box
                 component="main"
                 sx={{
+                    width: "100%",
+                    height: "100%",
                     display: 'flex',
                     flexDirection: 'column',
                     flexGrow: 1,
@@ -17,14 +23,8 @@ const Page = () => {
             >
                 <UsecaseExample />
             </Box>
-        </>
+        </Paper>
     );
 };
-
-Page.getLayout = (page: any) => (
-    <Paper>
-        {page}
-    </Paper>
-);
 
 export default Page;
