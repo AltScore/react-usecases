@@ -1,25 +1,32 @@
-import React, {FC, useCallback, useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
+import {Provider as ReduxProvider} from 'react-redux';
 import {Stack} from "@mui/material";
 import {UsecasesBar} from "./usecasesBar";
 import {Usecase, UsecaseData} from "./Usecase";
 import {UsecasePillProps} from "./UsecasePill";
-import {UsecasesHelper} from "./usecasesHelper";
 import {TaskDefinition} from "@/lib/usecases-ui/taskDefinition";
-import {TaskInstanceProps} from "@/lib/usecases-ui/taskInstance";
+import {
+    AliasRecord,
+    AppDispatch,
+    initUsecasesApp,
+    store,
+    TaskLogic,
+    thunk_AppSetup,
+    thunk_SelectUsecase,
+    thunk_SetUsecasesData,
+    useDispatch,
+    useSelector
+} from "@/lib/usecases-ui/state";
 
 type UsecasesLoader = (textQuery: string) => Promise<UsecaseData[]>
 
-const useLoadUsecases = (usecasesLoader: UsecasesLoader, textQuery: string) => {
-    const [usecases, setUsecases] = useState<UsecaseData[]>([])
+const useLoadUsecases = (usecasesLoader: UsecasesLoader, dispatch: AppDispatch) => {
     const reloadUsecases = useCallback(async (textQuery: string) => {
-        const usecases = await usecasesLoader(textQuery);
-        setUsecases(usecases)
-    }, [usecasesLoader])
-    useEffect(() => {
-        reloadUsecases(textQuery).catch(console.error)
-    }, [])
+        const usecasesData = await usecasesLoader(textQuery);
+        await dispatch(thunk_SetUsecasesData({usecasesData}))
+        console.log("loaded usecasesData", usecasesData)
+    }, [dispatch, usecasesLoader])
     return {
-        usecases,
         reloadUsecases,
     }
 }
@@ -32,47 +39,79 @@ const useTextQuery = () => {
     }
 }
 
-
 type UsecasesProps = {
     taskDefinitions: Record<string, TaskDefinition>;
-    taskComponents: Record<string, FC<TaskInstanceProps>>;
     usecasesLoader: (textQuery: string) => Promise<UsecaseData[]>;
     // UsecasePill is a function that will be used like <UsecasePill usecase={usecase}/>
     UsecasePill: React.FC<UsecasePillProps>;
+    tasksLogic: AliasRecord<TaskLogic>;
+    appName: string;
 }
 const Usecases = (
     {
-        taskDefinitions,
-        taskComponents,
+        // strategy components
         usecasesLoader,
         UsecasePill,
+
+        // app logic components
+        taskDefinitions,
+        tasksLogic,
+        appName
     }: UsecasesProps
 ) => {
-    const {textQuery, setTextQuery} = useTextQuery()
-    const {usecases, reloadUsecases} = useLoadUsecases(usecasesLoader, textQuery)
+    // UI controls
     const [showPills, setShowPills] = useState(true)
     const [showBar, setShowBar] = useState(true)
     const [showUseCase, setShowUsecase] = useState(false)
-    const [selectedUsecaseData, setSelectedUsecaseData] = useState<UsecaseData | null>(null)
-    const helper = new UsecasesHelper(
-        taskDefinitions,
-        taskComponents,
-        selectedUsecaseData?.taskInstances || {},
-    )
 
-    const onUsecaseClicked = useCallback((usecase: any) => {
+
+    // app state TODO change to a usecases slice?
+    const tasksState = useSelector(state => state.tasks)
+    const dispatch = useDispatch()
+
+    // usecase loading
+    const {textQuery, setTextQuery} = useTextQuery()
+    const {reloadUsecases} = useLoadUsecases(usecasesLoader, dispatch)
+
+    useEffect(() => {
+        reloadUsecases("").catch(console.error)
+    }, [reloadUsecases])
+
+
+    useEffect(() => {
+        initUsecasesApp(
+            appName,
+            tasksLogic,
+            taskDefinitions,
+        )
+        dispatch(thunk_AppSetup({
+            appName,
+        }))
+    }, [appName, tasksLogic, taskDefinitions, dispatch])
+
+    const onUsecaseClicked = useCallback((usecase: UsecaseData) => {
         // setShowPills(false)
         // setShowBar(false)
-        setShowUsecase(true)
-        setSelectedUsecaseData(usecase)
-    }, [])
+        dispatch(thunk_SelectUsecase({usecaseId: usecase.id}))
+    }, [dispatch])
 
-    const onUseCaseCompleted = useCallback((_: Record<string, any>) => {
-        setShowPills(true)
-        setShowBar(true)
-        setShowUsecase(false)
-        setSelectedUsecaseData(null)
-    }, [])
+    const usecaseSelectedId = tasksState?.currentUsecaseState?.usecaseData.id
+    console.log(tasksState)
+
+    useEffect(() => {
+        console.log("usecaseSelectedId", usecaseSelectedId)
+        if (usecaseSelectedId) {
+            setShowPills(false)
+            setShowBar(false)
+            setShowUsecase(true)
+        } else {
+            setShowPills(true)
+            setShowBar(true)
+            setShowUsecase(false)
+        }
+    }, [usecaseSelectedId])
+
+    const usecasesData = tasksState?.usecasesData
 
     return <Stack
         height={"100%"}
@@ -97,7 +136,7 @@ const Usecases = (
                 justifyContent={"start"}
                 alignItems={"start"}
             >
-                {usecases.map((usecaseData, index) => {
+                {usecasesData && usecasesData.map((usecaseData, index) => {
                     return <UsecasePill
                         key={index}
                         usecase={usecaseData}
@@ -105,17 +144,18 @@ const Usecases = (
                     />
                 })}
             </Stack>}
-            {showUseCase && selectedUsecaseData && <Usecase
-                usecaseData={selectedUsecaseData!}
-                usecasesHelper={helper}
-                onCompleted={onUseCaseCompleted}
-            />}
+            {showUseCase && tasksState?.currentUsecaseState && <Usecase/>}
         </Stack>
     </Stack>
 }
 
+const UsecasesApp = (props: UsecasesProps) => {
+    return <ReduxProvider store={store}>
+        <Usecases {...props}/>
+    </ReduxProvider>
+}
+
 
 export {
-    Usecases,
-
+    UsecasesApp,
 };

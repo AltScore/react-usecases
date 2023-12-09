@@ -1,17 +1,33 @@
-export type InputSpec = {
-    type?: string;
-    schema?: any;
-}
-export type OutputSpec = {
-    type?: string;
-    schema?: any;
-}
-export type SlotSpec = any;
+import {AliasRecord, TaskState, TaskStatus} from "@/lib/usecases-ui/state";
 
 export type TaskDefinition = {
-    name: string;
-    inputs: Record<string, InputSpec>;
-    // There are the slot schemas
-    slots: Record<string, SlotSpec>;
-    outputs: Record<string, OutputSpec>;
+    input: AliasRecord<any>
+    // TODO Add slots schema for validation
+    // Idea: Just add the schema and use a json schema validator
+    // for validation at runtime when usecases are loaded.
+}
+
+export class TaskDefinitionClass {
+    taskDefinition: TaskDefinition
+
+    constructor(taskDefinition: TaskDefinition) {
+        this.taskDefinition = taskDefinition
+    }
+
+    newTaskInstanceState(instanceAlias: string): TaskState {
+        const inputs: AliasRecord<any> = {}
+        for (const inputName of Object.keys(this.taskDefinition)) {
+            inputs[inputName] = null
+        }
+        return {
+            taskAlias: instanceAlias,
+            status: TaskStatus.INACTIVE,
+            input: inputs,
+            // partial result because we don't have access to the
+            // gateway logic here
+            gateways: {},
+            // no one is referred at startup unless it is the root
+            referrerAlias: null,
+        }
+    }
 }

@@ -1,24 +1,11 @@
 import {Box, Paper, Stack, Typography} from "@mui/material";
 import React from "react";
-import {OnCompletedFunc, TaskInstance, TaskInstanceConfiguration} from "./taskInstance";
-import {UsecasesHelper} from "./usecasesHelper";
+import {TaskInstance, TaskInstanceConfiguration} from "./taskInstance";
+import {AliasRecord, AppDispatch, useDispatch, useSelector} from "@/lib/usecases-ui/state";
 
-type UsecaseProps = {
-    usecaseData: UsecaseData;
-    usecasesHelper: UsecasesHelper;
-    onCompleted: OnCompletedFunc;
-}
-export const Usecase = (
-    {
-        usecaseData,
-        usecasesHelper,
-        onCompleted,
-    }: UsecaseProps
-) => {
-    const localOnCompleted = (outputs: Record<string, any>) => {
-        console.log("completed", outputs)
-        onCompleted({})
-    }
+export const Usecase = () => {
+    // const tasksState = useSelector(state => state.tasks)
+    // const dispatch = useDispatch()
     return <Paper
         elevation={3}
         sx={{
@@ -29,21 +16,16 @@ export const Usecase = (
     >
         <Stack>
             <Box margin={"auto"}>
-                <TaskInstance
-                    inputs={{}}
-                    taskAlias={usecaseData.rootTaskInstanceAlias}
-                    usecasesHelper={usecasesHelper}
-                    onCompleted={localOnCompleted}
-                    shouldBeClosed={false}
-                    setOutputKey={() => {}}
-                    />
+                <TaskInstance />
             </Box>
         </Stack>
     </Paper>
 }
 export type UsecaseData = {
+    id: string;
     name: string;
     description: string;
+    rootTaskInstanceInput: AliasRecord<any>;
     rootTaskInstanceAlias: string;
-    taskInstances: Record<string, TaskInstanceConfiguration>;
+    taskInstances: AliasRecord<TaskInstanceConfiguration>;
 }

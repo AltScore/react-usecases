@@ -1,61 +1,86 @@
-import {UsecasesHelper} from "./usecasesHelper";
-import {TaskDefinition} from "@/lib/usecases-ui/taskDefinition";
-import React from "react";
+import React, {useCallback, useMemo} from "react";
+import {
+    AliasRecord,
+    thunk_TaskTransition,
+    usecasesAppClass,
+    UsecasesState,
+    UsecasesStateClass,
+    UsecaseStateClass,
+    useDispatch,
+    useSelector
+} from "@/lib/usecases-ui/state";
 
 export type TaskInstanceConfiguration = {
-    // type: task definition that is instantiated
+    // this is the alias of the task definition.
     type: string;
-    // slots: slots that are filled
-    // they are json objects, for example,
-    // an array of task instance aliases
-    // It is the responsibility of the task to validate the slots, for now
-    // while there is little tooling
-    slots: Record<string, any>;
-} // this component is responsible for loading a task
-
-export interface TaskInstanceProps {
-    inputs: Record<string, any>;
-    taskAlias: string;
-    usecasesHelper: UsecasesHelper;
-    onCompleted: (outputs: Record<string, any>) => void;
-    shouldBeClosed: boolean;
-    setOutputKey: (key: string, value: any) => void;
+    // just any json structure
+    // that the task knows how to read.
+    // TODO Add parseable slots schema to task definition
+    // to improve validation.
+    // For now, task implementer must determine what
+    // is the schema for the slots.
+    // The task then will know how to read this schema
+    // and generate the gateways dict accordingly.
+    // NOTE: Other dicts may be generated in the future,
+    // for example maybe input_overrides, flags, etc.
+    // well the task may already do any of these things
+    // because it determines how to behave.
+    slots: any;
 }
 
-export type OnCompletedFunc = (outputs: Record<string, any>) => void;
 
 // TaskInstance - Serves the purpose of a runner. It is a proxy for the task.
-export const TaskInstance = (
-    {
-        inputs,
-        taskAlias,
-        usecasesHelper,
-        onCompleted,
-        shouldBeClosed,
-        setOutputKey,
-    }
-        : TaskInstanceProps
-) => {
-    const taskInstanceConfiguration = usecasesHelper.getTaskInstanceConfiguration(taskAlias);
-    const taskDefinition = usecasesHelper.getTaskDefinitionForInstance(taskAlias);
-    const TaskFC = usecasesHelper.getTaskFCForInstance(taskAlias)
-    /*
-    Here there could be a lot of logic that could for example
-    - trigger onCompleted bypassing the task
-    - handle shouldBeClosed bypassing the task
-    - validate inputs according to task definition
-    - create a setOutputKey that would wrap the one passed as prop, adding additional logic
-    and checks.
-    - Updating a redux state.
-    - Getting info from redux state and pass along to the task
-     */
+export const TaskInstance = () => {
+    const tasksState = useSelector(state => state.tasks) as UsecasesState<true, true>
+    const dispatch = useDispatch()
 
-    return <TaskFC
-        inputs={inputs}
-        taskAlias={taskAlias}
-        usecasesHelper={usecasesHelper}
-        onCompleted={onCompleted}
-        shouldBeClosed={shouldBeClosed}
-        setOutputKey={setOutputKey}
-    />
+    const currentUsecaseState = tasksState.currentUsecaseState
+    const usecasesStateClass = new UsecasesStateClass(tasksState)
+    const usecaseStateClass = new UsecaseStateClass(
+        currentUsecaseState,
+        tasksState.tasksDefinitions,
+        tasksState.appName,
+    )
+    const usecaseClass = usecasesStateClass.usecaseClass(currentUsecaseState.usecaseData.id)
+    const currentTaskInstanceAlias = currentUsecaseState.currentTask
+
+    const taskInstanceConfiguration = usecaseClass.getTaskInstanceConfig(currentTaskInstanceAlias)
+
+    const TaskFC = usecasesAppClass.getTaskComponent(
+        tasksState.appName,
+        taskInstanceConfiguration.type,
+    )
+
+    const taskState = usecaseStateClass.getTaskState(currentTaskInstanceAlias);
+
+    const goToTask = useCallback((gatewayAlias: string, payload: AliasRecord<any>) => {
+        console.log("goToTask")
+        dispatch(
+            thunk_TaskTransition({
+                taskAlias: currentTaskInstanceAlias,
+                input: payload,
+                // the target alias in the tasks metalanguage. We convert it to the task instance alias
+                // according to configuration
+                gatewayAlias,
+            })
+        );
+    }, [dispatch, currentTaskInstanceAlias])
+
+    const memoizedTask = useMemo(() => {
+        return <TaskFC
+            inputs={taskState.input}
+            taskAlias={taskState.taskAlias}
+            gateways={taskState.gateways}
+            goTo={goToTask}
+        />
+    }, [taskState.taskAlias, taskState.status])
+
+    return memoizedTask;
+}
+
+export interface TaskInstanceProps {
+    inputs: AliasRecord<string>;
+    taskAlias: string;
+    gateways: AliasRecord<string>
+    goTo: (gatewayAlias: string, payload: AliasRecord<any>) => void;
 }
