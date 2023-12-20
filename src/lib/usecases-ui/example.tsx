@@ -2,9 +2,9 @@ import {Box, Button, Paper, Typography} from "@mui/material";
 import React from "react";
 import {UsecasesApp} from "./index";
 import {DefaultUsecasePill} from "./UsecasePill";
-import {UsecaseData} from "@/lib/usecases-ui/Usecase";
-import {AliasRecord, SystemAlias, TaskLogic} from "@/lib/usecases-ui/state";
-import {TaskDefinition} from "@/lib/usecases-ui/taskDefinition";
+import {TaskLogic} from "@/lib/usecases-ui/task";
+import {AliasRecord} from "@/lib/utils";
+import {UsecaseData} from "@/lib/usecases-ui/UsecaseClass";
 
 const usecasesLoaderMock = async (textQuery: string): Promise<UsecaseData[]> => {
     return [
@@ -33,67 +33,86 @@ const usecasesLoaderMock = async (textQuery: string): Promise<UsecaseData[]> => 
     ]
 }
 
-const tasksDefinitions: AliasRecord<TaskDefinition> = {
-    native: {
+type NativeGateways = {
+    endGateway: string,
+}
+
+type NativeInput = {
+    key: string,
+}
+
+
+const NativeLogic: TaskLogic<NativeGateways, NativeInput> = {
+    taskDefinition: {
         input: {
+            key: {}
         }
     },
-    rooted: {
+    gatewaysBuilder: (slots: any) => {
+        return {
+            endGateway: slots.endGateway,
+        }
+    },
+    Component: (props) => {
+
+        return (
+            <Paper>
+                <Typography>Native task</Typography>
+                <Typography>Input: {props.inputs.key} </Typography>
+                <Button
+                    onClick={() => {
+                        props.goTo(props.gateways.endGateway, {})
+                    }}
+                >
+                    Go away
+                </Button>
+            </Paper>
+        )
+    }
+}
+
+type RootedGateways = {
+    click1: string,
+    outputToSend: string,
+}
+
+type RootedInput = {
+    key: string,
+}
+
+const RootedLogic: TaskLogic<RootedGateways, RootedInput> = {
+    taskDefinition: {
         input: {
             "key": {},
         },
-    }
-};
+    },
+    Component: (props) => {
+        return (
+            <Paper>
+                <Typography>Rooted task</Typography>
+                <Button
+                    onClick={() => {
+                        props.goTo(props.gateways.click1, {
+                            key: props.gateways.outputToSend,
+                        })
+                    }}
+                >
+                    Go next
+                </Button>
+            </Paper>
+        )
+    },
+    gatewaysBuilder: (slots: any) => {
+        return {
+            click1: slots.click1,
+            outputToSend: slots.outputToSend,
+        }
+    },
+}
 
 const tasksLogic: AliasRecord<TaskLogic> = {
-    native: {
-        component: (props) => {
-
-            return (
-                <Paper>
-                    <Typography>Native task</Typography>
-                    <Typography>Input: {props.inputs.key} </Typography>
-                    <Button
-                        onClick={() => {
-                            props.goTo(props.gateways.endGateway, {
-                            })
-                        }}
-                    >
-                        Go away
-                    </Button>
-                </Paper>
-            )
-        },
-        gatewaysBuilder: (slots: any) => {
-            return {
-                endGateway: slots.endGateway,
-            }
-        },
-    },
-    rooted: {
-        component: (props) => {
-            return (
-                <Paper>
-                    <Typography>Rooted task</Typography>
-                    <Button
-                        onClick={() => {
-                            props.goTo(props.gateways.click1, {
-                                key: props.gateways.outputToSend,
-                            })
-                        }}
-                    >
-                        Go next
-                    </Button>
-                </Paper>
-            )
-        },
-        gatewaysBuilder: (slots: any) => {
-            return {
-                click1: slots.click1,
-                outputToSend: slots.outputToSend,
-            }
-        },
-    },
+    native: NativeLogic,
+    rooted: RootedLogic,
 }
 
 
@@ -107,7 +126,6 @@ const UsecaseExample = () => {
         <UsecasesApp
             usecasesLoader={usecasesLoaderMock}
             UsecasePill={DefaultUsecasePill}
-            taskDefinitions={tasksDefinitions}
             appName={"usecases_example_index"}
             tasksLogic={tasksLogic}
         />

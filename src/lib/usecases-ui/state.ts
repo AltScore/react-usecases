@@ -1,247 +1,21 @@
-import {combineReducers, configureStore, createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {
+    AsyncThunk,
+    combineReducers,
+    configureStore,
+    createAsyncThunk,
+    createSlice,
+    PayloadAction
+} from '@reduxjs/toolkit';
 import {TypedUseSelectorHook, useDispatch as useReduxDispatch, useSelector as useReduxSelector} from 'react-redux';
-import {UsecaseData} from "@/lib/usecases-ui/Usecase";
-import {TaskDefinition, TaskDefinitionClass} from "@/lib/usecases-ui/taskDefinition";
-import {TaskInstanceConfiguration, TaskInstanceProps} from "@/lib/usecases-ui/taskInstance";
-import {FC} from "react";
-import { v4 as uuidv4 } from 'uuid';
-
-export type TaskGatewaysBuilder = (slots: any) => AliasRecord<string>
-
-export type TaskLogic = {
-    component: FC<TaskInstanceProps>;
-    gatewaysBuilder: TaskGatewaysBuilder | null;
-}
-// singleton initializer of usecases
-class UsecasesAppClass {
-    apps: AliasRecord<{
-        tasksLogic: AliasRecord<TaskLogic>,
-        taskDefinitions: AliasRecord<TaskDefinition>,
-    }>
-
-    constructor() {
-        this.apps = {}
-    }
-
-    registerApp(appName: string, tasksLogic: AliasRecord<TaskLogic>, taskDefinitions: AliasRecord<TaskDefinition>) {
-        // if app is already registered, ignore
-        if (appName in this.apps) {
-            return
-        }
-        this.apps[appName] = {
-            tasksLogic,
-            taskDefinitions,
-        }
-        console.log(`usecases-ui: app '${appName}' correctly registered.`)
-    }
-
-    getTaskComponent(appName: string, taskName: string): FC<TaskInstanceProps> {
-        if (!(appName in this.apps)) {
-            throw new Error(`App ${appName} not found`)
-        }
-        const app = this.apps[appName]
-        if (!(taskName in app.tasksLogic)) {
-            throw new Error(`Task ${taskName} not found in app ${appName}`)
-        }
-        return app.tasksLogic[taskName].component
-    }
-
-    getTaskGatewaysBuilder(appName: string, taskName: string): TaskGatewaysBuilder | null {
-        if (!(appName in this.apps)) {
-            throw new Error(`App ${appName} not found`)
-        }
-        const app = this.apps[appName]
-        if (!(taskName in app.tasksLogic)) {
-            throw new Error(`Task ${taskName} not found in app ${appName}`)
-        }
-        return app.tasksLogic[taskName].gatewaysBuilder
-    }
-}
-
-export const usecasesAppClass = new UsecasesAppClass()
-
-export function initUsecasesApp(appName: string, tasksLogic: AliasRecord<TaskLogic>, taskDefinitions: AliasRecord<TaskDefinition>) {
-    usecasesAppClass.registerApp(appName, tasksLogic, taskDefinitions)
-    console.log(`usecases-ui: app '${appName}' correctly initialized.`)
-}
+import {usecasesAppClass} from "@/lib/usecases-ui/usecasesApp";
+import {AliasRecord} from "@/lib/utils";
+import {SystemAlias, TaskDefinition, TaskStatus} from "@/lib/usecases-ui/task";
+import {UsecasesState, UsecasesStateClass} from "@/lib/usecases-ui/usecasesState";
+import {UsecaseData, UsecaseStateClass} from "@/lib/usecases-ui/UsecaseClass";
 
 /* HELPERS */
 
-export class UsecasesStateClass {
-    usecasesState: UsecasesState
 
-    constructor(usecasesState: UsecasesState) {
-        this.usecasesState = usecasesState
-    }
-
-    getUsecaseData(usecaseId: string): UsecaseData {
-        for (const usecaseData of this.usecasesState.usecasesData) {
-            if (usecaseData.id === usecaseId) {
-                return usecaseData;
-            }
-        }
-        throw new Error(`Usecase ${usecaseId} not found`);
-    }
-
-    initializeUsecaseState(usecaseId: string): UsecaseState {
-        return this.usecaseClass(usecaseId).initializeUsecaseState();
-    }
-
-    usecaseClass(usecaseId: string): UsecaseClass {
-        const usecaseData = this.getUsecaseData(usecaseId);
-        return new UsecaseClass(
-            this.usecasesState.appName,
-            usecaseData,
-            this.usecasesState.tasksDefinitions
-        );
-    }
-
-    validateUsecasesData(usecasesData: UsecaseData[]) {
-        // if there are no task definitions, we can't validate anything
-        if (Object.keys(this.usecasesState.tasksDefinitions).length === 0) {
-            throw new Error('No task definitions found. Set task definitions first.');
-        }
-    }
-}
-
-export class UsecaseClass {
-    appName: string
-    usecaseData: UsecaseData
-    taskDefinitions: AliasRecord<TaskDefinition>
-
-    constructor(
-        appName: string,
-        usecaseData: UsecaseData,
-        taskDefinitions: AliasRecord<TaskDefinition>,
-    ) {
-        this.appName = appName
-        this.usecaseData = usecaseData
-        this.taskDefinitions = taskDefinitions
-    }
-
-
-    getTaskInstanceConfig(instanceAlias: string): TaskInstanceConfiguration {
-        if (!(instanceAlias in this.usecaseData.taskInstances)) {
-            throw new Error(`Task instance ${instanceAlias} not found in usecase ${this.usecaseData.name}`);
-        }
-        return this.usecaseData.taskInstances[instanceAlias];
-    }
-
-    getTaskDefinition(type: string): TaskDefinition {
-        if (!(type in this.taskDefinitions)) {
-            throw new Error(`Task type ${type} not found in usecase ${this.usecaseData.name}`);
-        }
-        return this.taskDefinitions[type];
-    }
-
-    taskDefinitionFromInstanceAlias(instanceAlias: string): TaskDefinition {
-        const taskInstance = this.getTaskInstanceConfig(instanceAlias)
-        return this.getTaskDefinition(taskInstance.type);
-    }
-
-    initializeTaskStateForUsecaseStartup(instanceAlias: string): TaskState {
-        const taskDefinition = this.taskDefinitionFromInstanceAlias(instanceAlias);
-        const taskDefinitionClass = new TaskDefinitionClass(taskDefinition);
-        const taskState = taskDefinitionClass.newTaskInstanceState(instanceAlias);
-        if (this.usecaseData.rootTaskInstanceAlias === instanceAlias) {
-            taskState.status = TaskStatus.ACTIVE;
-            taskState.input = this.usecaseData.rootTaskInstanceInput;
-            taskState.referrerAlias = SystemAlias.RootTask;
-        }
-        taskState.gateways = this.initializeTaskGateways(instanceAlias);
-        return taskState;
-    }
-
-    initializeTaskGateways(instanceAlias: string): AliasRecord<string> {
-        const taskInstanceConfig = this.getTaskInstanceConfig(instanceAlias)
-        const taskGatewaysBuilder = usecasesAppClass.getTaskGatewaysBuilder(this.appName, taskInstanceConfig.type);
-        if (taskGatewaysBuilder === null) {
-            console.warn(`No gateways builder found for task ${taskInstanceConfig.type}, setting as {}`)
-            return {}
-        }
-        // the task knows how to convert its slots into the gateways
-        return taskGatewaysBuilder(this.usecaseData.taskInstances[instanceAlias].slots);
-    }
-
-    // newUsecaseState
-    initializeUsecaseState(): UsecaseState {
-        return {
-            usecaseData: this.usecaseData,
-            currentTask: this.usecaseData.rootTaskInstanceAlias,
-            tasksStates: this.initializeUsecaseTaskStates(),
-        }
-    }
-
-    initializeUsecaseTaskStates(): AliasRecord<TaskState> {
-        const taskInstanceAliases = Object.keys(this.usecaseData.taskInstances);
-        return taskInstanceAliases.reduce(
-            (tasksStates: AliasRecord<TaskState>, taskInstanceAlias: string) => {
-                return {
-                    ...tasksStates,
-                    [taskInstanceAlias]: this.initializeTaskStateForUsecaseStartup(taskInstanceAlias),
-                }
-            }, {}
-        )
-    }
-}
-
-export class UsecaseStateClass {
-    usecaseState: UsecaseState
-    taskDefinitions: AliasRecord<TaskDefinition>
-    usecaseClass: UsecaseClass
-
-    constructor(usecaseState: UsecaseState, taskDefinitions: AliasRecord<TaskDefinition>, appName: string) {
-        this.usecaseState = usecaseState
-        this.taskDefinitions = taskDefinitions
-        this.usecaseClass = new UsecaseClass(
-            appName,
-            usecaseState.usecaseData,
-            taskDefinitions,
-        )
-    }
-
-    getTaskState(taskAlias: string): TaskState {
-        if (!(taskAlias in this.usecaseState.tasksStates)) {
-            throw new Error(`Status of task "${taskAlias}" not found in usecase ${this.usecaseState.usecaseData.name}`);
-        }
-        return this.usecaseState.tasksStates[taskAlias];
-    }
-
-}
-
-
-/* TYPES */
-export type AliasRecord<T> = {
-    [key: string]: T;
-}
-
-export enum TaskStatus {
-    ACTIVE = 'ACTIVE',
-    INACTIVE = 'INACTIVE',
-}
-
-export type TaskState = {
-    taskAlias: string;
-    status: TaskStatus;
-    input: AliasRecord<any>;
-    // gateway_alias: task-implementer-defined -> task_alias: flow-orchestrator-agent-defined
-    gateways: AliasRecord<string>;
-    // null only if it is root task or hasn't been activated yet
-    referrerAlias: string | null;
-}
-
-export type UsecasesState<ActiveStatus extends boolean = any, ActiveTask extends boolean = any> = {
-    appName: string;
-    tasksDefinitions: AliasRecord<TaskDefinition>;
-    usecasesData: UsecaseData[];
-    currentUsecaseState: ActiveStatus extends true ? UsecaseState<ActiveTask> : null
-}
-
-export type UsecaseState<ActiveTask extends boolean = any> = {
-    usecaseData: UsecaseData;
-    currentTask: ActiveTask extends true ? string : null;
-    tasksStates: AliasRecord<TaskState>
-}
 /* STATE VALIDATORS */
 
 const validate_activeUsecase = (state: UsecasesState) => {
@@ -365,6 +139,21 @@ const reducer_selectTask = reducer([
     };
 })
 
+// Warning: This does not merge, this sets
+const reducer_setTaskInput = reducer([
+    validate_activeUsecase,
+    validate_activeTask,
+], (state: UsecasesState<true>, {payload: {input, taskAlias}}: PayloadAction<{
+    input: AliasRecord<any>,
+    taskAlias: string,
+}>) => {
+    const task = state.currentUsecaseState.tasksStates[taskAlias];
+    if (task === undefined) {
+        throw new Error(`Task ${taskAlias} not found in usecase ${state.currentUsecaseState.usecaseData.name}`)
+    }
+    task.input = input
+})
+
 
 /* SLICE */
 
@@ -387,6 +176,7 @@ const usecasesSlice = createSlice({
         unselectTask: reducer_unselectTask,
         selectTask: reducer_selectTask,
         setAppName: reducer_setAppName,
+        setTaskInput: reducer_setTaskInput,
     }
 })
 
@@ -398,6 +188,7 @@ export const {
     unselectTask,
     selectTask,
     endUsecase,
+    setTaskInput,
 } = usecasesSlice.actions;
 
 export const tasksReducer = usecasesSlice.reducer;
@@ -426,12 +217,6 @@ export const useDispatch = () => useReduxDispatch<AppDispatch>();
 
 /* App logic aliases */
 
-export enum SystemAlias {
-    EndUsecase = 'EndUsecase',
-    ParentTask = 'ParentTask',
-    RootTask = 'RootTask',
-}
-
 /* THUNKS */
 
 const thunk = createAsyncThunk
@@ -449,7 +234,7 @@ const thunk = createAsyncThunk
     Then the task knows which gateway it is using.})
  */
 
-export const thunk_AppSetup = thunk(
+export const thunk_AppSetup: AsyncThunk<any, any, any> = thunk(
     'usecases/appSetup',
     async (payload: { appName: string }, {getState, dispatch}) => {
         const state = (getState as () => RootState)().tasks;
@@ -465,12 +250,16 @@ export const thunk_AppSetup = thunk(
         const appTasks = usecasesAppClass.apps[appName]
         dispatch(setAppName(payload.appName));
         // this makes the connection between the redux state and the global module state
-        dispatch(setTaskDefinitions(appTasks.taskDefinitions))
+        const taskDefinitions: AliasRecord<TaskDefinition> = {}
+        for (const taskName in appTasks.tasksLogic) {
+            taskDefinitions[taskName] = appTasks.tasksLogic[taskName].taskDefinition
+        }
+        dispatch(setTaskDefinitions(taskDefinitions))
         console.log(`usecases-ui: app '${appName}' correctly set up.`)
     }
 );
 
-export const thunk_SetUsecasesData = thunk(
+export const thunk_SetUsecasesData: AsyncThunk<any, any, any> = thunk(
     'usecases/setUsecasesData',
     async (payload: {usecasesData: UsecaseData[]}, {getState, dispatch}) => {
         console.log('usecases-ui: setting usecases data')
@@ -478,14 +267,39 @@ export const thunk_SetUsecasesData = thunk(
     }
 )
 
-export const thunk_SelectUsecase = thunk(
+export const thunk_SelectUsecase: AsyncThunk<any, any, any> = thunk(
     'usecases/selectUsecase',
     async (payload: {usecaseId: string}, {getState, dispatch}) => {
         dispatch(selectUsecase(payload.usecaseId))
     }
 )
 
-export const thunk_TaskTransition = thunk(
+// setTaskInput: sets the input of the current task
+// This is useful when the task could be called again with no input
+export const thunk_SetCurrentTaskInput: AsyncThunk<any, any, any> = thunk(
+    'usecases/setCurrentTaskInput',
+    async (payload: {input: AliasRecord<any>}, {getState, dispatch}) => {
+        const state = (getState as () => RootState)().tasks as UsecasesState<true>;
+        const currentUsecaseState = state.currentUsecaseState;
+        const usecasesStateClass = new UsecasesStateClass(state);
+        const usecaseClass = usecasesStateClass.usecaseClass(currentUsecaseState.usecaseData.id);
+        const usecaseStateClass = new UsecaseStateClass(currentUsecaseState, state.tasksDefinitions, state.appName);
+
+        const currentTask = currentUsecaseState.currentTask!;
+        const taskState = usecaseStateClass.getTaskState(currentTask)
+        const taskDefinition = usecaseClass.taskDefinitionFromInstanceAlias(currentTask);
+
+        dispatch(
+            setTaskInput({
+                input: payload.input,
+                taskAlias: currentTask,
+            })
+        )
+    }
+)
+
+
+export const thunk_TaskTransition: AsyncThunk<any, any, any> = thunk(
     'usecases/taskTransition',
     async (payload: {taskAlias: string, gatewayAlias: string, input: AliasRecord<any>}, {getState, dispatch}) => {
         try {

@@ -1,32 +1,14 @@
 import React, {useCallback, useMemo} from "react";
 import {
-    AliasRecord,
+    thunk_SetCurrentTaskInput,
     thunk_TaskTransition,
-    usecasesAppClass,
-    UsecasesState,
-    UsecasesStateClass,
-    UsecaseStateClass,
     useDispatch,
     useSelector
-} from "@/lib/usecases-ui/state";
-
-export type TaskInstanceConfiguration = {
-    // this is the alias of the task definition.
-    type: string;
-    // just any json structure
-    // that the task knows how to read.
-    // TODO Add parseable slots schema to task definition
-    // to improve validation.
-    // For now, task implementer must determine what
-    // is the schema for the slots.
-    // The task then will know how to read this schema
-    // and generate the gateways dict accordingly.
-    // NOTE: Other dicts may be generated in the future,
-    // for example maybe input_overrides, flags, etc.
-    // well the task may already do any of these things
-    // because it determines how to behave.
-    slots: any;
-}
+} from "./state";
+import {usecasesAppClass} from "@/lib/usecases-ui/usecasesApp";
+import {AliasRecord} from "@/lib/utils";
+import {UsecasesState, UsecasesStateClass} from "@/lib/usecases-ui/usecasesState";
+import {UsecaseStateClass} from "@/lib/usecases-ui/UsecaseClass";
 
 
 // TaskInstance - Serves the purpose of a runner. It is a proxy for the task.
@@ -66,21 +48,22 @@ export const TaskInstance = () => {
         );
     }, [dispatch, currentTaskInstanceAlias])
 
+    const setFutureInputs = useCallback((inputs: AliasRecord<any>) => {
+        dispatch(thunk_SetCurrentTaskInput({
+            input: inputs,
+        }))
+    }, [dispatch])
+
     const memoizedTask = useMemo(() => {
         return <TaskFC
             inputs={taskState.input}
             taskAlias={taskState.taskAlias}
             gateways={taskState.gateways}
             goTo={goToTask}
+            setFutureInputs={setFutureInputs}
         />
     }, [taskState.taskAlias, taskState.status])
 
     return memoizedTask;
 }
 
-export interface TaskInstanceProps {
-    inputs: AliasRecord<string>;
-    taskAlias: string;
-    gateways: AliasRecord<string>
-    goTo: (gatewayAlias: string, payload: AliasRecord<any>) => void;
-}

@@ -1,22 +1,22 @@
-import React, {useCallback, useEffect, useState} from "react";
 import {Provider as ReduxProvider} from 'react-redux';
+import React, {useCallback, useEffect, useState} from "react";
 import {Stack} from "@mui/material";
 import {UsecasesBar} from "./usecasesBar";
-import {Usecase, UsecaseData} from "./Usecase";
-import {UsecasePillProps} from "./UsecasePill";
-import {TaskDefinition} from "@/lib/usecases-ui/taskDefinition";
+import {Usecase} from "./Usecase";
+import {DefaultUsecasePill, UsecasePillProps} from "./UsecasePill";
 import {
-    AliasRecord,
     AppDispatch,
-    initUsecasesApp,
     store,
-    TaskLogic,
     thunk_AppSetup,
     thunk_SelectUsecase,
     thunk_SetUsecasesData,
     useDispatch,
     useSelector
-} from "@/lib/usecases-ui/state";
+} from "./state";
+import {TaskDefinition, TaskLogic} from "@/lib/usecases-ui/task";
+import {initUsecasesApp} from "@/lib/usecases-ui/usecasesApp";
+import {AliasRecord} from "@/lib/utils";
+import {UsecaseData} from "@/lib/usecases-ui/UsecaseClass";
 
 type UsecasesLoader = (textQuery: string) => Promise<UsecaseData[]>
 
@@ -40,10 +40,9 @@ const useTextQuery = () => {
 }
 
 type UsecasesProps = {
-    taskDefinitions: Record<string, TaskDefinition>;
     usecasesLoader: (textQuery: string) => Promise<UsecaseData[]>;
     // UsecasePill is a function that will be used like <UsecasePill usecase={usecase}/>
-    UsecasePill: React.FC<UsecasePillProps>;
+    UsecasePill?: React.FC<UsecasePillProps>;
     tasksLogic: AliasRecord<TaskLogic>;
     appName: string;
 }
@@ -51,10 +50,9 @@ const Usecases = (
     {
         // strategy components
         usecasesLoader,
-        UsecasePill,
+        UsecasePill=DefaultUsecasePill,
 
         // app logic components
-        taskDefinitions,
         tasksLogic,
         appName
     }: UsecasesProps
@@ -79,15 +77,15 @@ const Usecases = (
 
 
     useEffect(() => {
+        console.log("initiating app component")
         initUsecasesApp(
             appName,
             tasksLogic,
-            taskDefinitions,
         )
         dispatch(thunk_AppSetup({
             appName,
         }))
-    }, [appName, tasksLogic, taskDefinitions, dispatch])
+    }, [appName, tasksLogic, dispatch])
 
     const onUsecaseClicked = useCallback((usecase: UsecaseData) => {
         // setShowPills(false)

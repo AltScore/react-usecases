@@ -1,11 +1,8 @@
-import {Box, Paper, Stack, Typography} from "@mui/material";
+import {Box, Paper, Stack} from "@mui/material";
 import React from "react";
-import {TaskInstance, TaskInstanceConfiguration} from "./taskInstance";
-import {AliasRecord, AppDispatch, useDispatch, useSelector} from "@/lib/usecases-ui/state";
+import {TaskInstance} from "./TaskInstance";
 
 export const Usecase = () => {
-    // const tasksState = useSelector(state => state.tasks)
-    // const dispatch = useDispatch()
     return <Paper
         elevation={3}
         sx={{
@@ -21,11 +18,4 @@ export const Usecase = () => {
         </Stack>
     </Paper>
 }
-export type UsecaseData = {
-    id: string;
-    name: string;
-    description: string;
-    rootTaskInstanceInput: AliasRecord<any>;
-    rootTaskInstanceAlias: string;
-    taskInstances: AliasRecord<TaskInstanceConfiguration>;
-}
+
