@@ -1,6 +1,6 @@
 import {Provider as ReduxProvider} from 'react-redux';
 import React, {useCallback, useEffect, useState} from "react";
-import {Stack} from "@mui/material";
+import {CircularProgress, Stack} from "@mui/material";
 import {UsecasesBar} from "./usecasesBar";
 import {Usecase} from "./Usecase";
 import {DefaultUsecasePill, UsecasePillProps} from "./UsecasePill";
@@ -13,7 +13,7 @@ import {
     useDispatch,
     useSelector
 } from "./state";
-import {TaskDefinition, TaskLogic} from "@/lib/usecases-ui/task";
+import {TaskLogic} from "@/lib/usecases-ui/task";
 import {initUsecasesApp} from "@/lib/usecases-ui/usecasesApp";
 import {AliasRecord} from "@/lib/utils";
 import {UsecaseData} from "@/lib/usecases-ui/UsecaseClass";
@@ -21,13 +21,17 @@ import {UsecaseData} from "@/lib/usecases-ui/UsecaseClass";
 type UsecasesLoader = (textQuery: string) => Promise<UsecaseData[]>
 
 const useLoadUsecases = (usecasesLoader: UsecasesLoader, dispatch: AppDispatch) => {
+    const [loading, setLoading] = useState(false)
     const reloadUsecases = useCallback(async (textQuery: string) => {
+        setLoading(true)
         const usecasesData = await usecasesLoader(textQuery);
         await dispatch(thunk_SetUsecasesData({usecasesData}))
         console.log("loaded usecasesData", usecasesData)
-    }, [dispatch, usecasesLoader])
+        setLoading(false)
+    }, [dispatch, usecasesLoader, setLoading])
     return {
         reloadUsecases,
+        loading,
     }
 }
 
@@ -50,7 +54,7 @@ const Usecases = (
     {
         // strategy components
         usecasesLoader,
-        UsecasePill=DefaultUsecasePill,
+        UsecasePill = DefaultUsecasePill,
 
         // app logic components
         tasksLogic,
@@ -69,11 +73,18 @@ const Usecases = (
 
     // usecase loading
     const {textQuery, setTextQuery} = useTextQuery()
-    const {reloadUsecases} = useLoadUsecases(usecasesLoader, dispatch)
+    const {
+        reloadUsecases,
+        loading,
+    } = useLoadUsecases(usecasesLoader, dispatch)
 
     useEffect(() => {
         reloadUsecases("").catch(console.error)
     }, [reloadUsecases])
+
+    useEffect(() => {
+        reloadUsecases(textQuery).catch(console.error)
+    }, [textQuery])
 
 
     useEffect(() => {
@@ -111,6 +122,21 @@ const Usecases = (
 
     const usecasesData = tasksState?.usecasesData
 
+    if (loading) {
+
+        return (
+            <Stack
+                direction={"row"}
+                justifyContent={"center"}
+                alignItems={"center"}
+                width={"100%"}
+                height={"100%"}
+            >
+                <CircularProgress/>
+            </Stack>
+        )
+    }
+
     return <Stack
         height={"100%"}
         width={"100%"}
@@ -128,8 +154,8 @@ const Usecases = (
         >
             {showBar && <UsecasesBar setTextQuery={setTextQuery}/>}
             {showPills && <Stack
-                spacing={2}
                 direction={"row"}
+                gap={"1rem"}
                 flexWrap={"wrap"}
                 justifyContent={"start"}
                 alignItems={"start"}

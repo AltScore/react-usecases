@@ -9,12 +9,16 @@ export const Usecase = () => {
             width: "100%",
             flexGrow: 1,
             maxHeight: "80%",
+            height: "100%",
         }}
     >
-        <Stack>
-            <Box margin={"auto"}>
+        <Stack
+            width={"100%"}
+            height={"100%"}
+            direction={"row"}
+            justifyContent={"center"}
+        >
                 <TaskInstance />
-            </Box>
         </Stack>
     </Paper>
 }
