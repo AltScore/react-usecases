@@ -288,10 +288,15 @@ export const thunk_SetCurrentTaskInput: AsyncThunk<any, any, any> = thunk(
         const currentTask = currentUsecaseState.currentTask!;
         const taskState = usecaseStateClass.getTaskState(currentTask)
         const taskDefinition = usecaseClass.taskDefinitionFromInstanceAlias(currentTask);
+        // merge old input with new
+        const newInput = {
+            ...taskState.input,
+            ...payload.input,
+        }
 
         dispatch(
             setTaskInput({
-                input: payload.input,
+                input: newInput,
                 taskAlias: currentTask,
             })
         )
