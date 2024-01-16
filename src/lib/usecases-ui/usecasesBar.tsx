@@ -1,13 +1,14 @@
 import { TextField } from "@mui/material";
 import React from "react";
+import {UsecasesBarProps} from "@/lib/usecases-ui/index";
 
-export type UsecasesBarProps = {
-    setTextQuery: (textQuery: string) => void;
+interface DefaultUsecasesBarProps extends UsecasesBarProps {
 }
-export const UsecasesBar = (
+
+export const DefaultUsecasesBar = (
     {
         setTextQuery,
-    }: UsecasesBarProps
+    }: DefaultUsecasesBarProps
 ) => {
     const [value, setValue] = React.useState<string>('');
     return <TextField

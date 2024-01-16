@@ -8,7 +8,6 @@ export const Usecase = () => {
         sx={{
             width: "100%",
             flexGrow: 1,
-            maxHeight: "80%",
             height: "100%",
         }}
     >

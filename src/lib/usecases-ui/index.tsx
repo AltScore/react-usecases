@@ -1,7 +1,7 @@
 import {Provider as ReduxProvider} from 'react-redux';
 import React, {useCallback, useEffect, useState} from "react";
 import {CircularProgress, Stack} from "@mui/material";
-import {UsecasesBar} from "./usecasesBar";
+import {DefaultUsecasesBar} from "./usecasesBar";
 import {Usecase} from "./Usecase";
 import {DefaultUsecasePill, UsecasePillProps} from "./UsecasePill";
 import {
@@ -17,6 +17,11 @@ import {TaskLogic} from "@/lib/usecases-ui/task";
 import {initUsecasesApp} from "@/lib/usecases-ui/usecasesApp";
 import {AliasRecord} from "@/lib/utils";
 import {UsecaseData} from "@/lib/usecases-ui/UsecaseClass";
+import {set} from "immer/src/utils/common";
+
+export interface UsecasesBarProps {
+    setTextQuery: (textQuery: string) => void;
+}
 
 type UsecasesLoader = (textQuery: string) => Promise<UsecaseData[]>
 
@@ -37,9 +42,13 @@ const useLoadUsecases = (usecasesLoader: UsecasesLoader, dispatch: AppDispatch) 
 
 const useTextQuery = () => {
     const [textQuery, setTextQuery] = useState("")
+
+    const setTextQueryHandler = useCallback((textQuery: string) => {
+        setTextQuery(textQuery)
+    }, [setTextQuery])
     return {
         textQuery,
-        setTextQuery,
+        setTextQuery: setTextQueryHandler,
     }
 }
 
@@ -47,6 +56,7 @@ type UsecasesProps = {
     usecasesLoader: (textQuery: string) => Promise<UsecaseData[]>;
     // UsecasePill is a function that will be used like <UsecasePill usecase={usecase}/>
     UsecasePill?: React.FC<UsecasePillProps>;
+    UsecasesBar?: React.FC<UsecasesBarProps> | null;
     tasksLogic: AliasRecord<TaskLogic>;
     appName: string;
 }
@@ -58,7 +68,8 @@ const Usecases = (
 
         // app logic components
         tasksLogic,
-        appName
+        appName,
+        UsecasesBar = DefaultUsecasesBar,
     }: UsecasesProps
 ) => {
     // UI controls
@@ -117,6 +128,12 @@ const Usecases = (
             setShowPills(true)
             setShowBar(true)
             setShowUsecase(false)
+            // reload usecases
+            if (textQuery !== "") {
+                setTextQuery("")
+            } else {
+                reloadUsecases("").catch(console.error)
+            }
         }
     }, [usecaseSelectedId])
 
@@ -152,7 +169,7 @@ const Usecases = (
             spacing={2}
             px={"2rem"}
         >
-            {showBar && <UsecasesBar setTextQuery={setTextQuery}/>}
+            {showBar && UsecasesBar && <UsecasesBar setTextQuery={setTextQuery}/>}
             {showPills && <Stack
                 direction={"row"}
                 gap={"1rem"}
