@@ -2,7 +2,7 @@ import {Provider as ReduxProvider} from 'react-redux';
 import React, {useCallback, useEffect, useState} from "react";
 import {CircularProgress, Stack} from "@mui/material";
 import {DefaultUsecasesBar} from "./usecasesBar";
-import {Usecase} from "./Usecase";
+import {DefaultUsecaseContainer} from "./DefaultUsecaseContainer";
 import {DefaultUsecasePill, UsecasePillProps} from "./UsecasePill";
 import {
     AppDispatch,
@@ -18,6 +18,7 @@ import {initUsecasesApp} from "@/lib/usecases-ui/usecasesApp";
 import {AliasRecord} from "@/lib/utils";
 import {UsecaseData} from "@/lib/usecases-ui/UsecaseClass";
 import {set} from "immer/src/utils/common";
+import {TaskInstance} from "@/lib/usecases-ui/TaskInstance";
 
 export interface UsecasesBarProps {
     setTextQuery: (textQuery: string) => void;
@@ -58,6 +59,7 @@ type UsecasesProps = {
     UsecasePill?: React.FC<UsecasePillProps>;
     UsecasesBar?: React.FC<UsecasesBarProps> | null;
     tasksLogic: AliasRecord<TaskLogic>;
+    UsecaseContainer?: React.FC<any>;
     appName: string;
 }
 const Usecases = (
@@ -70,6 +72,7 @@ const Usecases = (
         tasksLogic,
         appName,
         UsecasesBar = DefaultUsecasesBar,
+        UsecaseContainer = DefaultUsecaseContainer,
     }: UsecasesProps
 ) => {
     // UI controls
@@ -185,7 +188,11 @@ const Usecases = (
                     />
                 })}
             </Stack>}
-            {showUseCase && tasksState?.currentUsecaseState && <Usecase/>}
+            {showUseCase && tasksState?.currentUsecaseState &&
+                <UsecaseContainer>
+                    <TaskInstance/>
+                </UsecaseContainer>
+            }
         </Stack>
     </Stack>
 }

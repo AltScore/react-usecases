@@ -2,7 +2,7 @@ import {Box, Paper, Stack} from "@mui/material";
 import React from "react";
 import {TaskInstance} from "./TaskInstance";
 
-export const Usecase = () => {
+export const DefaultUsecaseContainer = (props: any) => {
     return <Paper
         elevation={3}
         sx={{
@@ -17,7 +17,7 @@ export const Usecase = () => {
             direction={"row"}
             justifyContent={"center"}
         >
-                <TaskInstance />
+            {props.children}
         </Stack>
     </Paper>
 }
