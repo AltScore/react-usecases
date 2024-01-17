@@ -1,5 +1,5 @@
 import {Provider as ReduxProvider} from 'react-redux';
-import React, {useCallback, useEffect, useState} from "react";
+import React, {ReactNode, useCallback, useEffect, useState} from "react";
 import {CircularProgress, Stack} from "@mui/material";
 import {DefaultUsecasesBar} from "./usecasesBar";
 import {DefaultUsecaseContainer} from "./DefaultUsecaseContainer";
@@ -59,7 +59,10 @@ type UsecasesProps = {
     UsecasePill?: React.FC<UsecasePillProps>;
     UsecasesBar?: React.FC<UsecasesBarProps> | null;
     tasksLogic: AliasRecord<TaskLogic>;
-    UsecaseContainer?: React.FC<any>;
+    // usecase container has children
+    UsecaseContainer?: React.FC<{
+        children: ReactNode,
+    }>;
     appName: string;
 }
 const Usecases = (
