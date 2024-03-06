@@ -177,17 +177,22 @@ const Usecases = (
         >
             {showBar && UsecasesBar && <UsecasesBar setTextQuery={setTextQuery}/>}
             {showPills && <Stack
-                direction={"row"}
-                gap={"1rem"}
-                flexWrap={"wrap"}
+                direction={"column"}
+                spacing={"24px"}
                 justifyContent={"start"}
-                alignItems={"start"}
-            >
+                alignItems={"start"}>
                 <Typography
-                    justifyContent={"start"} 
+                    justifyContent={"start"}
                     variant={"h4"}>
-                    Bienvenido
+                    ¡Bienvenid@!
                 </Typography>
+                <Stack
+                    width={"100%"}
+                    direction={"row"}
+                    gap={"1rem"}
+                    flexWrap={"wrap"}
+                    justifyContent={"start"}
+                    alignItems={"start"}>
                 {usecasesData && usecasesData.map((usecaseData, index) => {
                     return <UsecasePill
                         key={index}
@@ -195,6 +200,8 @@ const Usecases = (
                         onUsecaseClicked={onUsecaseClicked}
                     />
                 })}
+                </Stack>
+
             </Stack>}
             {showUseCase && tasksState?.currentUsecaseState &&
                 <UsecaseContainer>
