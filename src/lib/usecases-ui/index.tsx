@@ -1,6 +1,6 @@
 import {Provider as ReduxProvider} from 'react-redux';
 import React, {ReactNode, useCallback, useEffect, useState} from "react";
-import {CircularProgress, Stack, Typography} from "@mui/material";
+import {Box, CircularProgress, Stack, Typography} from "@mui/material";
 import {DefaultUsecasesBar} from "./usecasesBar";
 import {DefaultUsecaseContainer} from "./DefaultUsecaseContainer";
 import {DefaultUsecasePill, UsecasePillProps} from "./UsecasePill";
@@ -176,13 +176,19 @@ const Usecases = (
             px={"2rem"}
         >
             {showBar && UsecasesBar && <UsecasesBar setTextQuery={setTextQuery}/>}
-            {showPills && 
+            {showPills &&
+            <Box
+            width={"100%"}
+            height={"100%"}
+            alignItems={"start"}>
             <Typography
+                alignItems={"start"}
                 justifyContent={"start"}
                 justifySelf={"start"}
                 variant={"h4"}>
                 ¡Bienvenid@!
-            </Typography>}
+            </Typography>
+            </Box>}
             {showPills && <Stack
                 direction={"column"}
                 spacing={"24px"}
