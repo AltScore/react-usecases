@@ -176,16 +176,20 @@ const Usecases = (
             px={"2rem"}
         >
             {showBar && UsecasesBar && <UsecasesBar setTextQuery={setTextQuery}/>}
+            {showPills && 
+            <Typography
+                justifyContent={"start"}
+                justifySelf={"start"}
+                variant={"h4"}>
+                ¡Bienvenid@!
+            </Typography>}
             {showPills && <Stack
                 direction={"column"}
                 spacing={"24px"}
+                justifySelf={"start"}
                 justifyContent={"start"}
                 alignItems={"start"}>
-                <Typography
-                    justifyContent={"start"}
-                    variant={"h4"}>
-                    ¡Bienvenid@!
-                </Typography>
+
                 <Stack
                     width={"100%"}
                     direction={"row"}
