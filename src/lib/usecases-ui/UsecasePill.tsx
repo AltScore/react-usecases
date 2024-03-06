@@ -9,7 +9,8 @@ const DefaultUsecasePill = (
 ) => {
     return <Card
         sx={{
-            minWidth: 200,
+            minWidth: 128,
+            maxWidth: 256,
         }}
     >
         <CardActionArea
