@@ -180,7 +180,8 @@ const Usecases = (
             <Box
             width={"100%"}
             height={"100%"}
-            alignItems={"start"}>
+            alignItems={"start"}
+            marginBottom={"12px"}>
             <Typography
                 alignItems={"start"}
                 justifyContent={"start"}
