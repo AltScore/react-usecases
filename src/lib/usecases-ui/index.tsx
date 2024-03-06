@@ -175,9 +175,6 @@ const Usecases = (
             spacing={2}
             px={"2rem"}
         >
-            <Typography variant={"h4"}>
-                bienvenido
-            </Typography>
             {showBar && UsecasesBar && <UsecasesBar setTextQuery={setTextQuery}/>}
             {showPills && <Stack
                 direction={"row"}
@@ -186,6 +183,11 @@ const Usecases = (
                 justifyContent={"start"}
                 alignItems={"start"}
             >
+                <Typography
+                    justifyContent={"start"} 
+                    variant={"h4"}>
+                    Bienvenido
+                </Typography>
                 {usecasesData && usecasesData.map((usecaseData, index) => {
                     return <UsecasePill
                         key={index}
