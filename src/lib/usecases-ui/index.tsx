@@ -145,20 +145,20 @@ const Usecases = (
 
     const usecasesData = tasksState?.usecasesData
 
-    if (loading) {
+    // if (loading) {
 
-        return (
-            <Stack
-                direction={"row"}
-                justifyContent={"center"}
-                alignItems={"center"}
-                width={"100%"}
-                height={"100%"}
-            >
-                <CircularProgress/>
-            </Stack>
-        )
-    }
+    //     return (
+    //         <Stack
+    //             direction={"row"}
+    //             justifyContent={"center"}
+    //             alignItems={"center"}
+    //             width={"100%"}
+    //             height={"100%"}
+    //         >
+    //             <CircularProgress/>
+    //         </Stack>
+    //     )
+    // }
 
     return <Stack
         height={"100%"}
@@ -173,24 +173,23 @@ const Usecases = (
             justifyContent={"start"}
             alignItems={"center"}
             spacing={2}
-            px={"2rem"}
         >
-            {showBar && UsecasesBar && <UsecasesBar setTextQuery={setTextQuery}/>}
-            {showPills &&
+            {showBar && !loading && UsecasesBar && <UsecasesBar setTextQuery={setTextQuery}/>}
+            {showPills && !loading && usecasesData &&
             <Box
-            width={"100%"}
-            height={"100%"}
-            alignItems={"start"}
-            marginBottom={"12px"}>
-            <Typography
+                width={"100%"}
+                height={"100%"}
                 alignItems={"start"}
-                justifyContent={"start"}
-                justifySelf={"start"}
-                variant={"h4"}>
-                ¡Bienvenid@!
-            </Typography>
+                marginBottom={"12px"}>
+                <Typography
+                    alignItems={"start"}
+                    justifyContent={"start"}
+                    justifySelf={"start"}
+                    variant={"h4"}>
+                    ¡Bienvenid@!
+                </Typography>
             </Box>}
-            {showPills && <Stack
+            {showPills && !loading &&<Stack
                 direction={"column"}
                 spacing={"24px"}
                 justifySelf={"start"}
