@@ -186,7 +186,7 @@ const Usecases = (
                     justifyContent={"start"}
                     justifySelf={"start"}
                     variant={"h4"}>
-                    ¡Bienvenid@!
+                    Bienvenido
                 </Typography>
             </Box>}
             {showPills && !loading &&<Stack
