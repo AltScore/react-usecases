@@ -1,7 +1,7 @@
 {
   "name": "usecases-ui",
-  "version": "0.2.20",
-  "author": "Ignacio Loyola at AltScore",
+  "version": "0.2.21",
+  "author": "Ignacio Loyola and José Gramsch at AltScore",
   "repository": {
     "type": "git",
     "url": "https://github.com/AltScore/react-usecases.git"
