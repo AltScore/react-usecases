@@ -12,7 +12,13 @@ const DefaultUsecasePill = ({
         height: 256,
       }}
     >
-      <CardActionArea onClick={() => onUsecaseClicked(usecase)}>
+      <CardActionArea
+        sx={{
+          width: 256,
+          height: 256,
+        }}
+        onClick={() => onUsecaseClicked(usecase)}
+      >
         <CardContent>
           <Typography variant={"h6"}>{usecase.name}</Typography>
           <Typography variant={"body2"}>{usecase.description}</Typography>
