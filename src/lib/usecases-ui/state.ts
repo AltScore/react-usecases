@@ -16,6 +16,7 @@ import {UsecaseData, UsecaseStateClass} from "@/lib/usecases-ui/UsecaseClass";
 /* HELPERS */
 
 
+
 /* STATE VALIDATORS */
 
 const validate_activeUsecase = (state: UsecasesState) => {

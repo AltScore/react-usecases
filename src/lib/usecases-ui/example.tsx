@@ -1,89 +1,87 @@
-import {Box, Button, Paper, Typography} from "@mui/material";
-import React from "react";
-import {UsecasesApp} from "./index";
-import {DefaultUsecasePill} from "./UsecasePill";
-import {TaskLogic} from "@/lib/usecases-ui/task";
-import {AliasRecord} from "@/lib/utils";
-import {UsecaseData} from "@/lib/usecases-ui/UsecaseClass";
+import { Box, Button, Paper, Typography } from '@mui/material';
+import React from 'react';
+import { UsecasesApp } from './index';
+import { DefaultUsecasePill } from './UsecasePill';
+import { TaskLogic } from '@/lib/usecases-ui/task';
+import { AliasRecord } from '@/lib/utils';
+import { UsecaseData } from '@/lib/usecases-ui/UsecaseClass';
 
 const usecasesLoaderMock = async (textQuery: string): Promise<UsecaseData[]> => {
     return [
         {
-            id: "1",
+            id: '1',
             rootTaskInstanceInput: {},
-            name: "Usecase 1",
-            rootTaskInstanceAlias: "task2",
-            description: "This is the first usecase",
+            name: 'Usecase 1',
+            rootTaskInstanceAlias: 'task2',
+            description: 'This is the first usecase',
             taskInstances: {
                 task1: {
-                    type: "native",
+                    type: 'native',
                     slots: {
-                        endGateway: "EndUsecase",
+                        endGateway: 'EndUsecase',
                     },
                 },
                 task2: {
-                    type: "rooted",
+                    type: 'rooted',
                     slots: {
-                        click1: "task1",
-                        outputToSend: "1",
+                        click1: 'task1',
+                        outputToSend: '1',
                     },
-                }
+                },
             },
-        }
-    ]
-}
+        },
+    ];
+};
 
 type NativeGateways = {
-    endGateway: string,
-}
+    endGateway: string;
+};
 
 type NativeInput = {
-    key: string,
-}
-
+    key: string;
+};
 
 const NativeLogic: TaskLogic<NativeGateways, NativeInput> = {
     taskDefinition: {
         input: {
-            key: {}
-        }
+            key: {},
+        },
     },
     gatewaysBuilder: (slots: any) => {
         return {
             endGateway: slots.endGateway,
-        }
+        };
     },
     Component: (props) => {
-
         return (
             <Paper>
                 <Typography>Native task</Typography>
                 <Typography>Input: {props.inputs.key} </Typography>
                 <Button
                     onClick={() => {
-                        props.goTo(props.gateways.endGateway, {})
+                        props.goTo(props.gateways.endGateway, {});
                     }}
                 >
                     Go away
                 </Button>
             </Paper>
-        )
-    }
-}
+        );
+    },
+};
 
 type RootedGateways = {
-    click1: string,
-    outputToSend: string,
-}
+    click1: string;
+    outputToSend: string;
+};
 
 type RootedInput = {
-    key: string,
-}
+    key: string;
+};
 
 const RootedLogic: TaskLogic<RootedGateways, RootedInput> = {
     taskDefinition: {
         input: {
-            "key": {},
+            key: {},
         },
     },
     Component: (props) => {
@@ -94,41 +92,42 @@ const RootedLogic: TaskLogic<RootedGateways, RootedInput> = {
                     onClick={() => {
                         props.goTo(props.gateways.click1, {
                             key: props.gateways.outputToSend,
-                        })
+                        });
                     }}
                 >
                     Go next
                 </Button>
             </Paper>
-        )
+        );
     },
     gatewaysBuilder: (slots: any) => {
         return {
             click1: slots.click1,
             outputToSend: slots.outputToSend,
-        }
+        };
     },
-}
+};
 
 const tasksLogic: AliasRecord<TaskLogic> = {
     native: NativeLogic,
     rooted: RootedLogic,
-}
-
+};
 
 const UsecaseExample = () => {
-    return <Box
-        padding={0}
-        margin={0}
-        height={"100%"}
-        width={"100%"}
-    >
-        <UsecasesApp
-            usecasesLoader={usecasesLoaderMock}
-            UsecasePill={DefaultUsecasePill}
-            appName={"usecases_example_index"}
-            tasksLogic={tasksLogic}
-        />
-    </Box>
-}
-export {UsecaseExample};
+    return (
+        <Box
+            padding={0}
+            margin={0}
+            height={'100%'}
+            width={'100%'}
+        >
+            <UsecasesApp
+                usecasesLoader={usecasesLoaderMock}
+                UsecasePill={DefaultUsecasePill}
+                appName={'usecases_example_index'}
+                tasksLogic={tasksLogic}
+            />
+        </Box>
+    );
+};
+export { UsecaseExample };

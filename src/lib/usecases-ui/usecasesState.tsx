@@ -1,20 +1,20 @@
-import {AliasRecord} from "@/lib/utils";
-import {TaskDefinition} from "@/lib/usecases-ui/task";
+import { AliasRecord } from '@/lib/utils';
+import { TaskDefinition } from '@/lib/usecases-ui/task';
 
-import {UsecaseClass, UsecaseData, UsecaseState} from "@/lib/usecases-ui/UsecaseClass";
+import { UsecaseClass, UsecaseData, UsecaseState } from '@/lib/usecases-ui/UsecaseClass';
 
 export type UsecasesState<ActiveStatus extends boolean = any, ActiveTask extends boolean = any> = {
     appName: string;
     tasksDefinitions: AliasRecord<TaskDefinition>;
     usecasesData: UsecaseData[];
-    currentUsecaseState: ActiveStatus extends true ? UsecaseState<ActiveTask> : null
-}
+    currentUsecaseState: ActiveStatus extends true ? UsecaseState<ActiveTask> : null;
+};
 
 export class UsecasesStateClass {
-    usecasesState: UsecasesState
+    usecasesState: UsecasesState;
 
     constructor(usecasesState: UsecasesState) {
-        this.usecasesState = usecasesState
+        this.usecasesState = usecasesState;
     }
 
     getUsecaseData(usecaseId: string): UsecaseData {
@@ -32,11 +32,7 @@ export class UsecasesStateClass {
 
     usecaseClass(usecaseId: string): UsecaseClass {
         const usecaseData = this.getUsecaseData(usecaseId);
-        return new UsecaseClass(
-            this.usecasesState.appName,
-            usecaseData,
-            this.usecasesState.tasksDefinitions
-        );
+        return new UsecaseClass(this.usecasesState.appName, usecaseData, this.usecasesState.tasksDefinitions);
     }
 
     validateUsecasesData(usecasesData: UsecaseData[]) {
