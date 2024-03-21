@@ -23,7 +23,8 @@ import { UsecasesLayoutProps, DefaultLayout } from './UsecaseLayout';
 
 type UsecasesProps = {
     usecasesLoader: (textQuery: string) => Promise<UsecaseData[]>;
-    IntroTitle?: string;
+    introTitle?: string;
+    introSubtitle?: string;
     // UsecasePill is a function that will be used like <UsecasePill usecase={usecase}/>
     UsecasePill?: React.FC<UsecasePillProps>;
     UsecasesBar?: React.FC<UsecasesBarProps> | null;
@@ -40,7 +41,8 @@ const Usecases = ({
     // strategy components
     usecasesLoader,
     UsecasePill = DefaultUsecasePill,
-    IntroTitle = '',
+    introTitle = '',
+    introSubtitle = '',
     // app logic components
     tasksLogic,
     appName,
@@ -126,6 +128,7 @@ const Usecases = ({
 
     return (
         <Stack
+            id={'usecases-main-stack'}
             height={'100%'}
             width={'100%'}
             direction={'row'}
@@ -133,6 +136,7 @@ const Usecases = ({
             justifyContent={'center'}
         >
             <Stack
+                id={'show-bar-and-pills-stack'}
                 height={'100%'}
                 width={'100%'}
                 direction={'column'}
@@ -148,20 +152,31 @@ const Usecases = ({
                         alignItems={'start'}
                         marginBottom={'12px'}
                     >
-                        {IntroTitle != '' && (
+                        {introTitle != '' && (
                             <Typography
                                 alignItems={'start'}
                                 justifyContent={'start'}
                                 justifySelf={'start'}
                                 variant={'h4'}
                             >
-                                {IntroTitle}
+                                {introTitle}
+                            </Typography>
+                        )}
+                        {introSubtitle != '' && (
+                            <Typography
+                                alignItems={'start'}
+                                justifyContent={'start'}
+                                justifySelf={'start'}
+                                variant={'h2'}
+                            >
+                                {introSubtitle}
                             </Typography>
                         )}
                     </Box>
                 )}
                 {showPills && !loading && (
                     <Stack
+                        id={'usecases-pills-column'}
                         width={'100%'}
                         direction={'column'}
                         spacing={'24px'}
@@ -170,6 +185,7 @@ const Usecases = ({
                         alignItems={'start'}
                     >
                         <Stack
+                            id={'usecases-pills-row'}
                             width={'100%'}
                             direction={'row'}
                             gap={'1rem'}
