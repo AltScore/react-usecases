@@ -34,7 +34,7 @@ type UsecasesProps = {
         children: ReactNode;
     }>;
     appName: string;
-    UsecasesLayout: React.FC<UsecasesLayoutProps>;
+    // UsecasesLayout: React.FC<UsecasesLayoutProps>;
 };
 
 const Usecases = ({
