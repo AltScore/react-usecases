@@ -175,11 +175,11 @@ const Usecases = ({
                         width={'100%'}
                         height={'100%'}
                         spacing={layoutCustomization.textSpacing}
+                        justifySelf={layoutCustomization.textAlignment ? layoutCustomization.textAlignment : 'start'}
                     >
                         {introTitle.label != '' && (
                             <Typography
                                 alignItems={introTitle.align ? introTitle.align : 'start'}
-                                justifySelf={introTitle.align ? introTitle.align : 'start'}
                                 variant={introTitle.variant ? introTitle.variant : 'h3'}
                                 color={introTitle.color ? introTitle.color : '#111927'}
                             >
@@ -189,7 +189,6 @@ const Usecases = ({
                         {introSubtitle.label != '' && (
                             <Typography
                                 alignItems={introSubtitle.align ? introSubtitle.align : 'start'}
-                                justifySelf={introSubtitle.align ? introSubtitle.align : 'start'}
                                 variant={introSubtitle.variant ? introSubtitle.variant : 'h2'}
                                 color={introSubtitle.color ? introSubtitle.color : '#6C737F'}
                             >
