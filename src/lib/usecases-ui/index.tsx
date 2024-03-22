@@ -161,6 +161,7 @@ const Usecases = ({
             <Stack
                 direction={'column'}
                 spacing={'12px'}
+                width={'100%'}
             >
                 {showBar && !loading && UsecasesBar && <UsecasesBar setTextQuery={setTextQuery} />}
 
