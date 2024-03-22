@@ -155,90 +155,100 @@ const Usecases = ({
             height={'100%'}
             width={'100%'}
             direction={'row'}
-            justifyContent={layoutCustomization.generalAlignment}
+            justifyContent={'center'}
             marginTop={layoutCustomization.generalMarginTop}
         >
             <Stack
-                id={'show-bar-and-pills-stack'}
-                height={'100%'}
-                width={layoutCustomization.introWidth}
                 direction={'column'}
-                alignSelf={layoutCustomization.generalAlignment}
-                // justifyContent={layoutCustomization.generalAlignment}
-                spacing={layoutCustomization.textPillSpacing}
-                marginTop={layoutCustomization.introMarginTop}
+                spacing={'12px'}
             >
                 {showBar && !loading && UsecasesBar && <UsecasesBar setTextQuery={setTextQuery} />}
+
                 {showPills && !loading && usecasesData && (
                     <Stack
-                        id={'landing-titles-stack'}
-                        width={'100%'}
+                        id={'show-bar-and-pills-stack'}
                         height={'100%'}
-                        spacing={layoutCustomization.textSpacing}
-                        justifySelf={layoutCustomization.textAlignment ? layoutCustomization.textAlignment : 'start'}
-                    >
-                        {introTitle.label != '' && (
-                            <Typography
-                                alignItems={introTitle.align ? introTitle.align : 'start'}
-                                variant={introTitle.variant ? introTitle.variant : 'h3'}
-                                color={introTitle.color ? introTitle.color : '#111927'}
-                            >
-                                {introTitle.label}
-                            </Typography>
-                        )}
-                        {introSubtitle.label != '' && (
-                            <Typography
-                                alignItems={introSubtitle.align ? introSubtitle.align : 'start'}
-                                variant={introSubtitle.variant ? introSubtitle.variant : 'h2'}
-                                color={introSubtitle.color ? introSubtitle.color : '#6C737F'}
-                            >
-                                {introSubtitle.label}
-                            </Typography>
-                        )}
-                    </Stack>
-                )}
-                {showPills && !loading && (
-                    <Stack
-                        id={'usecases-pills-column'}
-                        width={'100%'}
+                        width={layoutCustomization.introWidth}
                         direction={'column'}
-                        justifySelf={'start'}
-                        justifyContent={'start'}
-                        alignItems={'start'}
+                        alignSelf={layoutCustomization.generalAlignment}
+                        // justifyContent={layoutCustomization.generalAlignment}
+                        spacing={layoutCustomization.textPillSpacing}
+                        marginTop={layoutCustomization.introMarginTop}
                     >
                         <Stack
-                            id={'usecases-pills-row'}
+                            id={'landing-titles-stack'}
                             width={'100%'}
-                            direction={'row'}
-                            spacing={layoutCustomization.interPillSpacing}
-                            flexWrap={'wrap'}
-                            justifyContent={layoutCustomization.pillAlignment}
-                            alignItems={layoutCustomization.pillAlignment}
+                            height={'100%'}
+                            spacing={layoutCustomization.textSpacing}
+                            justifySelf={
+                                layoutCustomization.textAlignment ? layoutCustomization.textAlignment : 'start'
+                            }
                         >
-                            {usecasesData &&
-                                usecasesData.map((usecaseData, index) => {
-                                    return (
-                                        <UsecasePill
-                                            key={index}
-                                            usecase={usecaseData}
-                                            onUsecaseClicked={onUsecaseClicked}
-                                        />
-                                    );
-                                })}
+                            {introTitle.label != '' && (
+                                <Typography
+                                    alignItems={introTitle.align ? introTitle.align : 'start'}
+                                    variant={introTitle.variant ? introTitle.variant : 'h3'}
+                                    color={introTitle.color ? introTitle.color : '#111927'}
+                                >
+                                    {introTitle.label}
+                                </Typography>
+                            )}
+                            {introSubtitle.label != '' && (
+                                <Typography
+                                    alignItems={introSubtitle.align ? introSubtitle.align : 'start'}
+                                    variant={introSubtitle.variant ? introSubtitle.variant : 'h2'}
+                                    color={introSubtitle.color ? introSubtitle.color : '#6C737F'}
+                                >
+                                    {introSubtitle.label}
+                                </Typography>
+                            )}
                         </Stack>
+                        {showPills && !loading && (
+                            <Stack
+                                id={'usecases-pills-column'}
+                                width={'100%'}
+                                direction={'column'}
+                                justifySelf={'start'}
+                                justifyContent={'start'}
+                                alignItems={'start'}
+                            >
+                                <Stack
+                                    id={'usecases-pills-row'}
+                                    width={'100%'}
+                                    direction={'row'}
+                                    gap={layoutCustomization.interPillSpacing}
+                                    spacing={layoutCustomization.interPillSpacing}
+                                    flexWrap={'wrap'}
+                                    justifyContent={layoutCustomization.pillAlignment}
+                                    alignItems={layoutCustomization.pillAlignment}
+                                >
+                                    {usecasesData &&
+                                        usecasesData.map((usecaseData, index) => {
+                                            return (
+                                                <UsecasePill
+                                                    key={index}
+                                                    usecase={usecaseData}
+                                                    onUsecaseClicked={onUsecaseClicked}
+                                                />
+                                            );
+                                        })}
+                                </Stack>
+                            </Stack>
+                        )}
                     </Stack>
                 )}
-            </Stack>
-            <Stack
-                direction={'column'}
-                width={'100%'}
-                alignItems={'center'}
-                justifyContent={'center'}
-            >
+
                 {showUseCase && tasksState?.currentUsecaseState && (
-                    <UsecaseContainer>
-                        <TaskInstance />
-                    </UsecaseContainer>
+                    <Stack
+                        direction={'column'}
+                        width={'100%'}
+                        alignItems={'center'}
+                        justifyContent={'center'}
+                    >
+                        <UsecaseContainer>
+                            <TaskInstance />
+                        </UsecaseContainer>
+                    </Stack>
                 )}
             </Stack>
         </Stack>
