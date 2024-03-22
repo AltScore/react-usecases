@@ -30,6 +30,9 @@ export type LayoutConfiguration = {
     pillAlignment?: string;
     introWidth?: string;
     interPillSpacing?: string;
+    generalWidth?: string;
+    taskContainerWidth?: string;
+    taskContainerAlignment?: string;
 };
 
 type UsecasesProps = {
@@ -65,6 +68,8 @@ const Usecases = ({
         pillAlignment: 'center',
         introWidth: '768px',
         interPillSpacing: '12px',
+        generalWidth: '100%',
+        taskContainerWidth: '100%',
     },
     // app logic components
     tasksLogic,
@@ -161,7 +166,7 @@ const Usecases = ({
             <Stack
                 direction={'column'}
                 spacing={'12px'}
-                width={'100%'}
+                width={layoutCustomization.generalWidth}
             >
                 {showBar && !loading && UsecasesBar && <UsecasesBar setTextQuery={setTextQuery} />}
 
@@ -242,9 +247,9 @@ const Usecases = ({
                 {showUseCase && tasksState?.currentUsecaseState && (
                     <Stack
                         direction={'column'}
-                        width={'100%'}
-                        alignItems={'center'}
-                        justifyContent={'center'}
+                        width={layoutCustomization.taskContainerWidth}
+                        alignItems={layoutCustomization.taskContainerAlignment}
+                        justifyContent={layoutCustomization.taskContainerAlignment}
                     >
                         <UsecaseContainer>
                             <TaskInstance />
