@@ -1,30 +1,42 @@
 import { Provider as ReduxProvider } from 'react-redux';
 import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
-import { Box, CircularProgress, Stack, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import { DefaultUsecasesBar, UsecasesBarProps } from './usecasesBar';
 import { DefaultUsecaseContainer } from './DefaultUsecaseContainer';
 import { DefaultUsecasePill, UsecasePillProps } from './UsecasePill';
-import {
-    AppDispatch,
-    store,
-    thunk_AppSetup,
-    thunk_SelectUsecase,
-    thunk_SetUsecasesData,
-    useDispatch,
-    useSelector,
-} from './state';
+import { store, thunk_AppSetup, thunk_SelectUsecase, useDispatch, useSelector } from './state';
 import { TaskLogic } from '@/lib/usecases-ui/task';
 import { initUsecasesApp } from '@/lib/usecases-ui/usecasesApp';
 import { AliasRecord } from '@/lib/utils';
 import { UsecaseData } from '@/lib/usecases-ui/UsecaseClass';
 import { TaskInstance } from '@/lib/usecases-ui/TaskInstance';
 import { useLoadUsecases, useTextQuery } from '@/lib/usecases-ui/CoreUtils';
-import { UsecasesLayoutProps, DefaultLayout } from './UsecaseLayout';
+import { Variant } from '@mui/material/styles/createTypography';
+
+export type TextConfiguration = {
+    label: string;
+    variant?: Variant; // TODO: add variants instead of string
+    color?: string; // TODO: filter string for colors instead of just a string
+    align?: string; // TODO: filter string for alignment instead of just a string
+};
+
+export type LayoutConfiguration = {
+    generalMarginTop?: string;
+    introMarginTop?: string;
+    textSpacing?: string;
+    textPillSpacing?: string;
+    generalAlignment?: string;
+    textAlignment?: string;
+    pillAlignment?: string;
+    introWidth?: string;
+    interPillSpacing?: string;
+};
 
 type UsecasesProps = {
     usecasesLoader: (textQuery: string) => Promise<UsecaseData[]>;
-    introTitle?: string;
-    introSubtitle?: string;
+    introTitle?: TextConfiguration;
+    introSubtitle?: TextConfiguration;
+    layoutCustomization?: LayoutConfiguration;
     // UsecasePill is a function that will be used like <UsecasePill usecase={usecase}/>
     UsecasePill?: React.FC<UsecasePillProps>;
     UsecasesBar?: React.FC<UsecasesBarProps> | null;
@@ -41,8 +53,19 @@ const Usecases = ({
     // strategy components
     usecasesLoader,
     UsecasePill = DefaultUsecasePill,
-    introTitle = '',
-    introSubtitle = '',
+    introTitle = { label: '', variant: 'h3', color: '#111927', align: 'start' },
+    introSubtitle = { label: '', variant: 'h2', color: '#6C737F', align: 'start' },
+    layoutCustomization = {
+        generalMarginTop: '0px',
+        introMarginTop: '0px',
+        textSpacing: '8px',
+        textPillSpacing: '24px',
+        generalAlignment: 'center',
+        textAlignment: 'start',
+        pillAlignment: 'center',
+        introWidth: '768px',
+        interPillSpacing: '12px',
+    },
     // app logic components
     tasksLogic,
     appName,
@@ -114,17 +137,17 @@ const Usecases = ({
 
     const usecasesData = tasksState?.usecasesData;
 
-    const pillArray = useMemo((): React.JSX.Element[] => {
-        return usecasesData.map((usecaseData, index) => {
-            return (
-                <UsecasePill
-                    key={index}
-                    usecase={usecaseData}
-                    onUsecaseClicked={onUsecaseClicked}
-                />
-            );
-        });
-    }, [usecasesData, onUsecaseClicked]);
+    // const pillArray = useMemo((): React.JSX.Element[] => {
+    //     return usecasesData.map((usecaseData, index) => {
+    //         return (
+    //             <UsecasePill
+    //                 key={index}
+    //                 usecase={usecaseData}
+    //                 onUsecaseClicked={onUsecaseClicked}
+    //             />
+    //         );
+    //     });
+    // }, [usecasesData, onUsecaseClicked]);
 
     return (
         <Stack
@@ -132,54 +155,53 @@ const Usecases = ({
             height={'100%'}
             width={'100%'}
             direction={'row'}
-            alignItems={'start'}
             justifyContent={'center'}
+            marginTop={layoutCustomization.generalMarginTop}
         >
             <Stack
                 id={'show-bar-and-pills-stack'}
                 height={'100%'}
-                width={'100%'}
+                width={layoutCustomization.introWidth}
                 direction={'column'}
-                justifyContent={'start'}
-                alignItems={'center'}
-                spacing={'12px'}
+                justifyContent={layoutCustomization.generalAlignment}
+                spacing={layoutCustomization.textPillSpacing}
+                marginTop={layoutCustomization.introMarginTop}
             >
                 {showBar && !loading && UsecasesBar && <UsecasesBar setTextQuery={setTextQuery} />}
                 {showPills && !loading && usecasesData && (
-                    <Box
+                    <Stack
+                        id={'landing-titles-box'}
                         width={'100%'}
                         height={'100%'}
-                        alignItems={'start'}
-                        marginBottom={'12px'}
+                        spacing={layoutCustomization.textSpacing}
                     >
-                        {introTitle != '' && (
+                        {introTitle.label != '' && (
                             <Typography
-                                alignItems={'start'}
-                                justifyContent={'start'}
-                                justifySelf={'start'}
-                                variant={'h4'}
+                                alignItems={introTitle.align ? introTitle.align : 'start'}
+                                justifySelf={introTitle.align ? introTitle.align : 'start'}
+                                variant={introTitle.variant ? introTitle.variant : 'h3'}
+                                color={introTitle.color ? introTitle.color : '#111927'}
                             >
-                                {introTitle}
+                                {introTitle.label}
                             </Typography>
                         )}
-                        {introSubtitle != '' && (
+                        {introSubtitle.label != '' && (
                             <Typography
-                                alignItems={'start'}
-                                justifyContent={'start'}
-                                justifySelf={'start'}
-                                variant={'h2'}
+                                alignItems={introSubtitle.align ? introSubtitle.align : 'start'}
+                                justifySelf={introSubtitle.align ? introSubtitle.align : 'start'}
+                                variant={introSubtitle.variant ? introSubtitle.variant : 'h2'}
+                                color={introSubtitle.color ? introSubtitle.color : '#6C737F'}
                             >
-                                {introSubtitle}
+                                {introSubtitle.variant ? introSubtitle.variant : 'h2'}
                             </Typography>
                         )}
-                    </Box>
+                    </Stack>
                 )}
                 {showPills && !loading && (
                     <Stack
                         id={'usecases-pills-column'}
                         width={'100%'}
                         direction={'column'}
-                        spacing={'24px'}
                         justifySelf={'start'}
                         justifyContent={'start'}
                         alignItems={'start'}
@@ -188,10 +210,10 @@ const Usecases = ({
                             id={'usecases-pills-row'}
                             width={'100%'}
                             direction={'row'}
-                            gap={'1rem'}
+                            spacing={layoutCustomization.interPillSpacing}
                             flexWrap={'wrap'}
-                            justifyContent={'start'}
-                            alignItems={'start'}
+                            justifyContent={layoutCustomization.pillAlignment}
+                            alignItems={layoutCustomization.pillAlignment}
                         >
                             {usecasesData &&
                                 usecasesData.map((usecaseData, index) => {
@@ -206,12 +228,12 @@ const Usecases = ({
                         </Stack>
                     </Stack>
                 )}
-                {showUseCase && tasksState?.currentUsecaseState && (
-                    <UsecaseContainer>
-                        <TaskInstance />
-                    </UsecaseContainer>
-                )}
             </Stack>
+            {showUseCase && tasksState?.currentUsecaseState && (
+                <UsecaseContainer>
+                    <TaskInstance />
+                </UsecaseContainer>
+            )}
         </Stack>
     );
 };
