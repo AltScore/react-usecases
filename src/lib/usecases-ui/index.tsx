@@ -155,7 +155,7 @@ const Usecases = ({
             height={'100%'}
             width={'100%'}
             direction={'row'}
-            justifyContent={'center'}
+            justifyContent={layoutCustomization.generalAlignment}
             marginTop={layoutCustomization.generalMarginTop}
         >
             <Stack
