@@ -192,7 +192,7 @@ const Usecases = ({
                                 variant={introSubtitle.variant ? introSubtitle.variant : 'h2'}
                                 color={introSubtitle.color ? introSubtitle.color : '#6C737F'}
                             >
-                                {introSubtitle.variant ? introSubtitle.variant : 'h2'}
+                                {introSubtitle.label}
                             </Typography>
                         )}
                     </Stack>
