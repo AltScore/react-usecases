@@ -229,11 +229,18 @@ const Usecases = ({
                     </Stack>
                 )}
             </Stack>
-            {showUseCase && tasksState?.currentUsecaseState && (
-                <UsecaseContainer>
-                    <TaskInstance />
-                </UsecaseContainer>
-            )}
+            <Stack
+                direction={'column'}
+                width={'100%'}
+                alignItems={'center'}
+                justifyContent={'center'}
+            >
+                {showUseCase && tasksState?.currentUsecaseState && (
+                    <UsecaseContainer>
+                        <TaskInstance />
+                    </UsecaseContainer>
+                )}
+            </Stack>
         </Stack>
     );
 };
