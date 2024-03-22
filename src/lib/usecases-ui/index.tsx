@@ -163,14 +163,15 @@ const Usecases = ({
                 height={'100%'}
                 width={layoutCustomization.introWidth}
                 direction={'column'}
-                justifyContent={layoutCustomization.generalAlignment}
+                alignSelf={layoutCustomization.generalAlignment}
+                // justifyContent={layoutCustomization.generalAlignment}
                 spacing={layoutCustomization.textPillSpacing}
                 marginTop={layoutCustomization.introMarginTop}
             >
                 {showBar && !loading && UsecasesBar && <UsecasesBar setTextQuery={setTextQuery} />}
                 {showPills && !loading && usecasesData && (
                     <Stack
-                        id={'landing-titles-box'}
+                        id={'landing-titles-stack'}
                         width={'100%'}
                         height={'100%'}
                         spacing={layoutCustomization.textSpacing}
